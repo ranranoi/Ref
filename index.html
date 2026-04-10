@@ -44,7 +44,8 @@ html,body{height:100%;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,
 /* ─── PAGE ─── */
 .page{display:none;min-height:calc(100vh - 56px)}
 .page.active{display:flex;flex-direction:column}
-#page-admin.active,#page-mypage.active{display:block;padding:24px}
+#page-admin.active{display:block !important;padding:24px}
+#page-mypage.active{display:block !important;padding:24px}
 
 /* ─── GALLERY TOPBAR ─── */
 .gallery-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line-alt);flex-shrink:0}
@@ -70,14 +71,13 @@ html,body{height:100%;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,
 .lb-like-btn.liked{color:#FF6B6B;background:rgba(255,107,107,.12);border-color:rgba(255,107,107,.3)}
 .lb-icon-btn{width:36px;height:36px;border-radius:var(--r-full);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .lb-icon-btn:hover{background:rgba(255,255,255,.16);color:#fff}
-.lb-body{display:flex;align-items:center;justify-content:center;flex:1;gap:24px;padding:16px 24px;overflow:hidden;position:relative}
-.lb-nav{width:44px;height:44px;border-radius:var(--r-full);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;z-index:10}
+.lb-body{display:flex;align-items:center;justify-content:center;flex:1;gap:20px;padding:12px 20px;overflow:hidden;position:relative}
+.lb-nav{width:40px;height:40px;border-radius:var(--r-full);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;z-index:10}
 .lb-nav:hover{background:rgba(255,255,255,.2);color:#fff;transform:scale(1.06)}
 .lb-nav:disabled{opacity:.2;cursor:default;transform:none}
-.lb-phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;height:100%}
-.lb-phone{height:calc(80vh - 56px - 32px - 22px);aspect-ratio:390/844;background:#111;border-radius:44px;border:2px solid rgba(255,255,255,.15);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);display:flex;flex-direction:column}
-.lb-phone-notch{height:28px;background:#111;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
-.lb-phone-notch::after{content:'';width:72px;height:16px;background:#000;border-radius:0 0 10px 10px;position:absolute;top:0}
+.lb-phone-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;height:100%}
+.lb-phone{height:calc(92vh - 56px - 24px - 20px);aspect-ratio:390/844;background:#1a1a2e;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.5);display:flex;flex-direction:column}
+.lb-phone-notch{display:none}
 .lb-phone-screen{flex:1;background:#1a1a2e;position:relative;overflow:hidden}
 .lb-phone-screen img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
 .lb-phone-label{font-size:11px;color:rgba(255,255,255,.35);text-align:center;font-weight:500;flex-shrink:0}
@@ -290,7 +290,7 @@ tbody tr:hover td{background:#FAFAFE}
 </nav>
 
 <!-- ─── GALLERY ─── -->
-<div class="page active" id="page-gallery" style="padding:0;display:flex;flex-direction:column">
+<div class="page active" id="page-gallery" style="padding:0">
 
   <!-- 상단 필터바 -->
   <div class="gallery-topbar">
@@ -1332,9 +1332,14 @@ function renderMypage() {
 
 // ─── PAGE SWITCH ───
 function showPage(p) {
-  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(el => {
+    el.classList.remove('active');
+    el.style.display = 'none';
+  });
   document.querySelectorAll('.seg-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
+  const target = document.getElementById('page-'+p);
+  target.classList.add('active');
+  target.style.display = (p === 'gallery') ? 'flex' : 'block';
   const idx = {gallery:0, admin:1, mypage:2}[p];
   document.querySelectorAll('.seg-btn')[idx].classList.add('active');
   if(p==='gallery') renderGallery();
@@ -1347,28 +1352,24 @@ function showPage(p) {
 async function dbLoadAll() {
   showLoading(true);
   try {
-    // 스크린 로드
     const { data: rows, error } = await supa
       .from('screens')
       .select('*')
       .order('created_at', { ascending: false });
     if(error) throw error;
 
-    // 내 좋아요 로드
     const { data: myLikes } = await supa
       .from('likes')
       .select('screen_id')
       .eq('user_key', userKey);
     liked = new Set((myLikes||[]).map(r => r.screen_id));
 
-    // 내 코멘트 스크린 로드
     const { data: myCmts } = await supa
       .from('comments')
       .select('screen_id')
       .eq('author', userKey);
     commented = new Set((myCmts||[]).map(r => r.screen_id));
 
-    // 각 스크린 이미지 URL 생성
     screens = (rows||[]).map(r => ({
       id:       r.id,
       co:       r.co,
@@ -1381,7 +1382,6 @@ async function dbLoadAll() {
       comments: []
     }));
 
-    // 코멘트 일괄 로드 (스크린 수 많아도 1번 쿼리)
     if(screens.length) {
       const { data: allCmts } = await supa
         .from('comments')
@@ -1392,12 +1392,45 @@ async function dbLoadAll() {
         if(s) s.comments.push({ a: c.author, t: c.body, dbId: c.id });
       });
     }
+
+    // DB는 연결됐지만 데이터가 없으면 샘플 보여줌
+    if(screens.length === 0) loadSampleData();
+
   } catch(e) {
-    showToast('데이터 로드 실패: ' + e.message);
+    // DB 연결 실패 시에도 샘플 데이터로 UI 확인 가능
+    console.warn('DB 연결 실패, 샘플 데이터로 표시합니다:', e.message);
+    loadSampleData();
   }
   showLoading(false);
   renderSidebar();
   renderGallery();
+}
+
+function loadSampleData() {
+  // 실제 모바일 앱 스크린샷 느낌의 샘플 이미지 (picsum - 390x844 비율)
+  const sampleImgs = [
+    'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=390&h=844&fit=crop',
+    'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=390&h=844&fit=crop',
+    'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=390&h=844&fit=crop',
+    'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=390&h=844&fit=crop',
+    'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?w=390&h=844&fit=crop',
+    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=390&h=844&fit=crop',
+  ];
+  screens = [
+    {id:1, co:'카카오뱅크', l:'L01', m:'M01', ins:'A', likes:12, imgSrc:sampleImgs[0], imgPath:'', comments:[{a:'김기획',t:'히어로 구성 참고할게요'},{a:'이디자인',t:'레이아웃 좋네요'}]},
+    {id:2, co:'카카오뱅크', l:'L01', m:'M02', ins:'B', likes:8,  imgSrc:sampleImgs[1], imgPath:'', comments:[]},
+    {id:3, co:'삼성화재',   l:'L02', m:'M01', ins:'A', likes:24, imgSrc:sampleImgs[2], imgPath:'', comments:[{a:'이디자인',t:'특약추천 UX 최고'},{a:'박개발',t:'배지 컴포넌트 깔끔해요'}]},
+    {id:4, co:'삼성화재',   l:'L03', m:'M03', ins:'B', likes:5,  imgSrc:sampleImgs[3], imgPath:'', comments:[]},
+    {id:5, co:'현대해상',   l:'L04', m:'M02', ins:'A', likes:19, imgSrc:sampleImgs[4], imgPath:'', comments:[]},
+    {id:6, co:'KB손해보험', l:'L05', m:'M01', ins:'C', likes:7,  imgSrc:sampleImgs[5], imgPath:'', comments:[{a:'최기획',t:'보험료 산출 화면 !!'}]},
+    {id:7, co:'메리츠화재', l:'L01', m:'M11', ins:'B', likes:3,  imgSrc:sampleImgs[0], imgPath:'', comments:[]},
+    {id:8, co:'DB손해보험', l:'L06', m:'M01', ins:'A', likes:15, imgSrc:sampleImgs[1], imgPath:'', comments:[]},
+    {id:9, co:'현대해상',   l:'L00', m:'M01', ins:'',  likes:6,  imgSrc:sampleImgs[2], imgPath:'', comments:[]},
+    {id:10,co:'삼성화재',   l:'L02', m:'M03', ins:'C', likes:11, imgSrc:sampleImgs[3], imgPath:'', comments:[]},
+    {id:11,co:'카카오뱅크', l:'L03', m:'M02', ins:'B', likes:9,  imgSrc:sampleImgs[4], imgPath:'', comments:[]},
+    {id:12,co:'KB손해보험', l:'L04', m:'M06', ins:'A', likes:4,  imgSrc:sampleImgs[5], imgPath:'', comments:[]},
+  ];
+  liked = new Set([1,3]);
 }
 
 async function dbUploadScreen(file, parsed) {
@@ -1486,6 +1519,10 @@ function showLoading(on) {
 }
 
 // ─── INIT ───
+// 초기 페이지 display 상태 설정
+document.getElementById('page-gallery').style.display = 'flex';
+document.getElementById('page-admin').style.display = 'none';
+document.getElementById('page-mypage').style.display = 'none';
 dbLoadAll();
 
 // 관리자 이벤트 위임
