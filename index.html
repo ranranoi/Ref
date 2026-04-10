@@ -79,7 +79,7 @@ html,body{height:100%;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,
 .lb-phone{height:calc(92vh - 56px - 24px - 20px);aspect-ratio:390/844;background:#1a1a2e;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.5);display:flex;flex-direction:column}
 .lb-phone-notch{display:none}
 .lb-phone-screen{flex:1;background:#1a1a2e;position:relative;overflow:hidden}
-.lb-phone-screen img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
+.lb-phone-screen img{width:100%;height:100%;object-fit:contain;display:block;position:absolute;inset:0;background:#000}
 .lb-phone-label{font-size:11px;color:rgba(255,255,255,.35);text-align:center;font-weight:500;flex-shrink:0}
 .lb-panel{width:280px;flex-shrink:0;height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
 .lb-panel-section{padding:0 0 20px}
@@ -580,7 +580,7 @@ function thumbHTML(s) {
   const c = thumbColor(s);
   const w1 = 55+((s.id*13)%30), w2 = 65+((s.id*7)%25), w3 = 40+((s.id*11)%25), w4 = 70+((s.id*17)%20);
   if(s.imgSrc) {
-    return `<img src="${s.imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0" alt="${s.co}">`;
+    return `<img src="${s.imgSrc}" style="width:100%;height:100%;object-fit:contain;display:block;position:absolute;inset:0;background:#fff" alt="${s.co}">`;
   }
   // 세로형 모바일 화면 목업
   return `<div style="background:${c};width:100%;height:100%;display:flex;flex-direction:column;padding:12px 10px;gap:5px;position:absolute;inset:0">
@@ -710,7 +710,7 @@ function renderGallery() {
       const img = document.createElement('img');
       img.src = s.imgSrc;
       img.alt = s.co;
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0';
+      img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;position:absolute;inset:0;background:#fff';
       thumbWrap.appendChild(img);
     } else {
       thumbWrap.insertAdjacentHTML('beforeend', thumbHTML(s));
@@ -1308,7 +1308,7 @@ function renderMypage() {
         const img = document.createElement('img');
         img.src = s.imgSrc;
         img.alt = s.co;
-        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff';
         thumb.appendChild(img);
       } else {
         thumb.innerHTML = `
