@@ -57,6 +57,7 @@ html,body{height:100%;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,
 .chip[data-ins="A"].active{background:#1A5DC8;border-color:#1A5DC8}
 .chip[data-ins="B"].active{background:#007A38;border-color:#007A38}
 .chip[data-ins="C"].active{background:#A05200;border-color:#A05200}
+.chip[data-ins="D"].active{background:#6B21A8;border-color:#6B21A8}
 .chip-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
 /* 기업 select — chip 무드 */
 .co-select{height:32px;padding:0 32px 0 14px;border-radius:var(--r-full);border:1.5px solid var(--line);background:var(--surface);font-size:12px;font-weight:600;color:var(--label-assist);cursor:pointer;font-family:inherit;transition:all .18s;white-space:nowrap;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23878787' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
@@ -309,6 +310,7 @@ tbody tr:hover td{background:#FAFAFE}
         <button class="chip" data-ins="A" onclick="actions.setIns(this,'A')"><span class="chip-dot"></span>자동차보험</button>
         <button class="chip" data-ins="B" onclick="actions.setIns(this,'B')"><span class="chip-dot"></span>건강보험</button>
         <button class="chip" data-ins="C" onclick="actions.setIns(this,'C')"><span class="chip-dot"></span>운전자보험</button>
+        <button class="chip" data-ins="D" onclick="actions.setIns(this,'D')"><span class="chip-dot"></span>기타보험</button>
       </div>
       <div style="width:1px;height:20px;background:var(--line-alt);flex-shrink:0"></div>
       <select class="co-select" id="co-filter-sel" onchange="setSidebarCo(this.value)">
@@ -533,13 +535,14 @@ tbody tr:hover td{background:#FAFAFE}
       <label class="form-lbl">대분류</label>
       <select class="form-inp" id="edit-l" onchange="actions.updateEditM()">
         <option value="L00">L00 공용</option>
-        <option value="L01">L01 인트로영역</option>
-        <option value="L02">L02 특약안내</option>
-        <option value="L03">L03 본인인증</option>
-        <option value="L04">L04 자동차/운전자</option>
-        <option value="L05">L05 산출/가입</option>
-        <option value="L06">L06 결제</option>
-        <option value="L07">L07 메인화면/보험탐색</option>
+        <option value="L01">L01 [Step0] 인트로영역</option>
+        <option value="L02">L02 [Step0] 특약/약관/고지</option>
+        <option value="L03">L03 [Step1] 본인인증/개인고지</option>
+        <option value="L04">L04 [Step2] 자동차/운전자</option>
+        <option value="L05">L05 [Step3-4] 산출</option>
+        <option value="L06">L06 [Step5] 계약자/피보험자</option>
+        <option value="L07">L07 [Step6-7] 청약/결제</option>
+        <option value="L08">L08 일반</option>
       </select>
     </div>
     <div class="form-grp">
@@ -553,6 +556,7 @@ tbody tr:hover td{background:#FAFAFE}
         <option value="A">A — 자동차보험</option>
         <option value="B">B — 건강보험</option>
         <option value="C">C — 운전자보험</option>
+        <option value="D">D — 기타보험</option>
       </select>
     </div>
     <div class="modal-foot">
@@ -582,31 +586,54 @@ const CONFIG = {
 // 2. CLASSIFICATION — 분류 체계. 새 분류 추가 시 여기만 수정
 // ════════════════════════════════════════════════
 const L_LABELS = {
-  L00:'공용', L01:'인트로영역', L02:'특약안내', L03:'본인인증',
-  L04:'자동차/운전자', L05:'산출/가입', L06:'결제', L07:'메인화면/보험탐색'
+  L00:'공용',
+  L01:'[Step0] 인트로영역',
+  L02:'[Step0] 특약/약관/고지',
+  L03:'[Step1] 본인인증/개인고지',
+  L04:'[Step2] 자동차/운전자',
+  L05:'[Step3-4] 산출',
+  L06:'[Step5] 계약자/피보험자',
+  L07:'[Step6-7] 청약/결제',
+  L08:'일반',
 };
 const M_LABELS = {
-  L01:{ M01:'히어로영역',   M02:'상품주요특징', M03:'상세특약',    M04:'자주묻는질문',
-        M05:'고객센터',     M06:'사고처리안내', M07:'보상범위',    M08:'크로스셀링',
-        M09:'배너',         M10:'TM전환유도',   M11:'리뷰',        M12:'상품특징',
-        M13:'기타설명',     M14:'독특한기능' },
+  L00:{ M01:'바텀시트모달', M02:'스플래시', M03:'팝업' },
+  L01:{
+    M01:'히어로영역',           M02:'상품특징(특약관련)',   M03:'특약리스트',
+    M04:'자주묻는질문',         M05:'고객센터',             M06:'사고처리안내',
+    M07:'보상범위 안내',        M08:'추천상품',             M09:'배너',
+    M10:'TM연결',               M11:'리뷰',                 M12:'상품특징(특약제외)',
+    M13:'기타설명',             M14:'특이한 기능',
+  },
   L02:{ M01:'특약추천', M02:'특약안내', M03:'특약선택', M04:'약관상세' },
-  L03:{ M01:'기본안내', M02:'본인확인', M03:'약관동의', M04:'기본정보입력',
-        M05:'기본정보확인', M06:'보험약관', M07:'추가정보확인', M08:'청약정보확인' },
-  L04:{ M01:'소유자정보', M02:'자동차등록', M03:'자동차선택', M04:'보험기간',
-        M05:'자동차정보확인', M06:'옵션선택', M08:'운전자범위', M10:'기타사항', M11:'사진등록' },
-  L05:{ M01:'보험료산출', M02:'보상범위수정', M03:'보상범위추천', M04:'동일증권' },
-  L06:{ M01:'결제수단' },
-  L07:{ M01:'메인화면', M02:'메인화면-메뉴(햄버거)' },
-  L00:{ M01:'안내모달', M02:'스플래시' }
+  L03:{
+    M01:'본인인증 기본안내',    M02:'본인확인',             M03:'약관동의',
+    M04:'기본정보 입력',        M05:'기본정보 확인',        M06:'직업선택',
+    M07:'추가고지사항(질병,흡연)',
+  },
+  L04:{
+    M01:'소유자 정보 입력',     M02:'자동차 등록',          M03:'(자차없음)자동차 선택',
+    M04:'자동차보험기간',       M05:'자동차옵션 선택',      M06:'운전자 범위',
+    M07:'운전자 정보입력',      M08:'기타',                 M09:'특약조건 사진 등록(청약중)',
+    M10:'자동차 정보확인',      M11:'(자차있음)자동차 선택',
+  },
+  L05:{
+    M01:'보험료 산출',          M02:'보상범위수정',         M03:'보상범위추천(산출 후)',
+    M04:'동일증권 확인',        M05:'특약별 안내',          M06:'기타 정보변경',
+    M07:'차량/보조기기 가격입력',
+  },
+  L06:{},
+  L07:{ M01:'청약내용 확인', M02:'결제', M03:'결제수단', M04:'결제완료/실패', M05:'청약약관동의' },
+  L08:{ M01:'메인화면', M02:'메인화면-메뉴(햄버거)' },
 };
-const INS_LABELS = { A:'자동차보험', B:'건강보험', C:'운전자보험', '':'없음' };
+const INS_LABELS = { A:'자동차보험', B:'건강보험', C:'운전자보험', D:'기타보험', '':'없음' };
 
 // 보험유형별 배지 색상 — 새 유형 추가 시 여기만 수정
 const INS_BADGE = {
   A: { cls:'badge-car',    txt:'자동차' },
   B: { cls:'badge-health', txt:'건강'   },
   C: { cls:'badge-driver', txt:'운전자' },
+  D: { cls:'badge-neutral',txt:'기타'   },
   '':{ cls:'badge-none',   txt:'없음'   },
 };
 const COLORS = ['#EBF3FF','#E6F7ED','#FFF3E5','#F3EEFF','#E6F5F2','#FFF0F0','#F0F4FF','#FFF8E5'];
@@ -1010,7 +1037,7 @@ const render = {
     const tbody = document.getElementById('company-tbody');
     if(!tbody) return;
     if(!state.companies.length) {
-      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--label-disable);padding:20px;font-size:13px">등록된 기업이 없습니다. "스크린에서 기업 동기화" 버튼을 눌러주세요.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--label-disable);padding:20px;font-size:13px">등록된 기업이 없습니다. "스크린에서 기업 동기화" 버튼을 눌러주세요.</td></tr>`;
       return;
     }
     tbody.innerHTML = state.companies.map(c => `
@@ -1021,7 +1048,12 @@ const render = {
             placeholder="https://..." style="height:32px;font-size:12px;background:var(--bg)"
             onkeydown="if(event.key==='Enter')actions.saveCompanyUrl(${c.id})">
         </td>
-        <td><button class="tbl-btn" onclick="actions.saveCompanyUrl(${c.id})">저장</button></td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="tbl-btn" onclick="actions.saveCompanyUrl(${c.id})">저장</button>
+            ${c.url ? `<button class="tbl-btn tbl-btn-del" onclick="actions.clearCompanyUrl(${c.id})" title="링크 삭제">✕</button>` : ''}
+          </div>
+        </td>
       </tr>`).join('');
   },
 
@@ -1400,8 +1432,17 @@ const actions = {
     if(url && !url.startsWith('http')) url = 'https://' + url;
     try {
       await db.updateCompanyUrl(id, url);
+      render.companies();
       ui.toast('저장됐습니다');
     } catch(e) { ui.toast('저장 실패: ' + e.message); }
+  },
+
+  async clearCompanyUrl(id) {
+    try {
+      await db.updateCompanyUrl(id, '');
+      render.companies();
+      ui.toast('링크가 삭제됐습니다');
+    } catch(e) { ui.toast('삭제 실패: ' + e.message); }
   },
 };
 
