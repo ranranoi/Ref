@@ -313,7 +313,7 @@ tbody tr:hover td{background:#FAFAFE}
         <button class="chip" data-ins="D" onclick="actions.setIns(this,'D')"><span class="chip-dot"></span>기타보험</button>
       </div>
       <div style="width:1px;height:20px;background:var(--line-alt);flex-shrink:0"></div>
-      <select class="co-select" id="co-filter-sel" onchange="setSidebarCo(this.value)">
+      <select class="co-select" id="co-filter-sel" onchange="actions.setFilter('co', this.value)">
         <option value="">전체 기업</option>
       </select>
     </div>
@@ -1051,7 +1051,7 @@ const render = {
         <td>
           <div style="display:flex;gap:6px">
             <button class="tbl-btn" onclick="actions.saveCompanyUrl(${c.id})">저장</button>
-            ${c.url ? `<button class="tbl-btn tbl-btn-del" onclick="actions.clearCompanyUrl(${c.id})" title="링크 삭제">✕</button>` : ''}
+            <button class="tbl-btn tbl-btn-del" onclick="actions.deleteCompany(${c.id})">삭제</button>
           </div>
         </td>
       </tr>`).join('');
@@ -1437,11 +1437,13 @@ const actions = {
     } catch(e) { ui.toast('저장 실패: ' + e.message); }
   },
 
-  async clearCompanyUrl(id) {
+  async deleteCompany(id) {
     try {
-      await db.updateCompanyUrl(id, '');
+      const { error } = await supa.from('companies').delete().eq('id', id);
+      if(error) throw error;
+      state.companies = state.companies.filter(c => c.id !== id);
       render.companies();
-      ui.toast('링크가 삭제됐습니다');
+      ui.toast('기업이 삭제됐습니다');
     } catch(e) { ui.toast('삭제 실패: ' + e.message); }
   },
 };
